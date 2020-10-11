@@ -40,7 +40,7 @@ public class Lox {
     }
 
     private static void run (String src) {
-        Scanner scan = new Scanner(src);
+        LoxScanner scan = new LoxScanner(src);
         List<Token> tokens = scan.scanTokens();
 
         for (Token t : tokens)
