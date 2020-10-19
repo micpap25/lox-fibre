@@ -15,7 +15,7 @@ public class LoxScanner {
     List<Token> scanTokens(){
         while (!isAtEnd()) {
             start = current;
-            scanTokens();
+            scanToken();
         }
 
         tokens.add(new Token(TokenType.EOF, "", null, line));
@@ -39,8 +39,40 @@ public class LoxScanner {
             case '=': addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL); break;
             case '<': addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
             case '>': addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
-            default: Lox.error(line, "unexpected char."); break;
+            case '/': if (match('/')) while (peek() != '\n') advance(); else addToken(TokenType.SLASH);
+            case '"': string(); break;
+            case '\n': line++; break;
+            case ' ': case '\r': case '\t': break;
+            default: if (isDigit(c)) number(); else Lox.error(line, "unexpected char."); break;
         }
+    }
+
+    private void number(){
+        while (isDigit(peek())) advance();
+
+        if (peek() == '.' && isDigit(peekNext())){
+            advance();
+
+            while (isDigit(peek())) advance();
+        }
+
+        addToken(TokenType.NUMBER, Double.parseDouble(source.substring(start, current)));
+    }
+
+    private void string(){
+        while (peek() != '"' && !isAtEnd()){
+            if (peek() == '\n') line++;
+            advance();
+        }
+
+        if (isAtEnd()){
+            Lox.error(line, "Unterminated String");
+            return;
+        }
+
+        advance();
+        String value = source.substring(start + 1, current - 1);
+        addToken(TokenType.STRING, value);
     }
 
     private boolean match(char expected){
@@ -49,6 +81,20 @@ public class LoxScanner {
 
         current++;
         return true;
+    }
+
+    private char peek(){
+        if (isAtEnd()) return '\0';
+        return source.charAt(current);
+    }
+
+    private char peekNext(){
+        if (current + 1 >= source.length()) return '\0';
+        return source.charAt(current + 1);
+    }
+
+    private boolean isDigit(char c){
+        return c >= '0' && c <= '9';
     }
 
     private boolean isAtEnd() {
