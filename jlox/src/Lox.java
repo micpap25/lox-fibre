@@ -31,11 +31,12 @@ public class Lox {
 
     private static void runPrompt () throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            System.out.println("> ");
+
+        for (;;) {
+            System.out.print("> ");
+            String line = reader.readLine();
+            if (line == null) break;
             run(line);
-            hadError = false;
         }
     }
 
